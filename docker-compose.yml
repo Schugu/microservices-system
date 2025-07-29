@@ -1,0 +1,59 @@
+version: "3.9"
+
+services:
+  nginx:
+    image: nginx:latest
+    container_name: api-gateway
+    ports:
+      - "3000:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - users
+      - products
+    networks:
+      - app-network
+
+  users:
+    build: ./users
+    container_name: users
+    ports:
+      - "4000:8080"
+    env_file:
+      - ./users/.env
+    volumes:
+      - ./users:/app
+    networks:
+      - app-network
+
+  products:
+    build: ./products
+    container_name: products
+    ports:
+      - "4001:8081"
+    env_file:
+      - ./products/.env
+    volumes:
+      - ./products:/app
+    networks:
+      - app-network
+
+  db:
+    image: mysql:8.0
+    container_name: mysql-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Churrasco
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - app-network
+
+volumes:
+  mysql-data:
+
+networks:
+  app-network:
+    driver: bridge
